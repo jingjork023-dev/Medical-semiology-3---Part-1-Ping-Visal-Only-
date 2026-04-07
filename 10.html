@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical 3 - Ping Visal only </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;700&display=swap');
+        
+        body { font-family: 'ui-sans-serif', system-ui, 'Kantumruy Pro', sans-serif; }
+
+        .option-correct {
+            background-color: #dcfce7 !important;
+            border-color: #22c55e !important;
+            animation: pulse-green 0.4s ease-out;
+        }
+        .option-incorrect {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+            animation: shake 0.4s ease-in-out;
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+        .disabled-labels { pointer-events: none; opacity: 0.8; }
+        .khmer-text { font-family: 'Kantumruy Pro', sans-serif; line-height: 1.6; }
+        
+        .redo-btn {
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 6px;
+            background-color: #f3f4f6;
+            color: #4b5563;
+            border: 1px solid #d1d5db;
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .redo-btn:hover { background-color: #e5e7eb; color: #1f2937; }
+        .category-header {
+            background: #f8fafc;
+            border-left: 4px solid #3b82f6;
+            padding: 0.75rem 1rem;
+            margin: 2rem 0 1rem 0;
+            font-weight: bold;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 py-10 px-4">
+    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
+        <!-- Header -->
+        <div class="bg-blue-800 p-8 text-white text-center">
+            <h1 class="text-3xl font-bold mb-2">Medical semiology 3 - Part 1 (Ping Visal Only)</h1>
+            <p class="text-lg opacity-90">Appendicitis, Hepatitis, Trauma & GI Conditions</p>
+        </div>
+
+        <div class="p-8">
+            <div class="flex justify-between items-center border-b-2 border-blue-100 pb-4 mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Multiple Choice Questions</h2>
+                <button onclick="resetAll()" class="redo-btn font-bold uppercase tracking-wider">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    Reset All
+                </button>
+            </div>
+
+            <div id="quiz-container" class="space-y-6"></div>
+
+            <!-- Final Results -->
+            <div id="result-box" class="hidden mt-12 p-8 bg-blue-50 rounded-2xl border-2 border-blue-200 text-center">
+                <h3 class="text-2xl font-bold text-blue-900 mb-2">Quiz Complete!</h3>
+                <p class="text-4xl font-black text-blue-600 mb-4"><span id="final-score">0</span> / <span id="total-questions">0</span></p>
+                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="text-blue-600 font-semibold hover:underline">Back to top</button>
+            </div>
+
+            <div class="mt-12 flex justify-center">
+                <button onclick="calculateFinalScore()" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-4 px-12 rounded-full shadow-lg transition transform active:scale-95">
+                    Show Final Result
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            { category: "Appendicitis Quiz", questions: [
+                { q: "What is the currently accepted immune-related function of the appendix, particularly in younger individuals?", a: 1, options: ["It produces digestive enzymes.", "It acts as a lymphoid organ with an immuno-protective function.", "It filters blood for the circulatory system.", "It has no known function and is purely a developmental remnant."] },
+                { q: "What is the most common cause (etiology) of appendicitis?", a: 2, options: ["Bacterial infection from the skin.", "Viral gastroenteritis.", "Obstruction of the appendiceal lumen.", "High-fat dietary habits."] },
+                { q: "According to the sources, what is the lifetime incidence of acute appendicitis for men?", a: 1, options: ["6.7%", "8.6%", "10.2%", "5.0%"] },
+                { q: "Which type of organisms typically predominate in the early course of appendicitis pathophysiology?", a: 2, options: ["Anaerobic organisms.", "Fungi.", "Aerobic organisms.", "Parasites."] },
+                { q: "Microscopic findings in acute appendicitis classically include the proliferation of which cells in the muscularis propria?", a: 1, options: ["Lymphocytes.", "Neutrophils.", "Eosinophils.", "Basophils."] },
+                { q: "The initial vague, centralized pain of appendicitis is caused by the stimulation of visceral afferent nerve fibers at which levels?", a: 2, options: ["T1 through T4.", "T5 through T7.", "T8 through T10.", "L1 through L3."] },
+                { q: "Classically, where does appendicitis pain localize after the initial periumbilical discomfort?", a: 1, options: ["Left upper quadrant.", "Right lower quadrant.", "Epigastric region.", "Left lower quadrant."] },
+                { q: "Approximately what percentage of patients with appendicitis present with a fever?", a: 2, options: ["10%", "25%", "40%", "75%"] },
+                { q: "Which physical exam finding is defined as right lower quadrant pain elicited by palpation of the left lower quadrant?", a: 2, options: ["Murphy's sign.", "Psoas sign.", "Rovsing's sign.", "Obturator sign."] },
+                { q: "A positive psoas sign, which involves pain on extension of the right hip, suggests which specific anatomical position of the appendix?", a: 1, options: ["Pelvic appendicitis.", "Retro-cecal appendicitis.", "Pre-ileal appendicitis.", "Sub-hepatic appendicitis."] },
+                { q: "At 36 hours after the onset of symptoms, what is the estimated risk of appendiceal rupture?", a: 0, options: ["2%", "5%", "10%", "25%"] },
+                { q: "Up to what fraction of patients with acute appendicitis will present with a normal white blood cell (WBC) count?", a: 3, options: ["1/10", "1/5", "1/4", "1/3"] },
+                { q: "In a CT scan, what is the specific diameter threshold used as a criterion for an enlarged appendix?", a: 2, options: ["Greater than 2 mm.", "Greater than 4 mm.", "Greater than 6 mm.", "Greater than 10 mm."] },
+                { q: "What is the reported accuracy rate of a CT scan for the diagnosis of appendicitis?", a: 2, options: ["80%", "90%", "Greater than 95%", "100%"] },
+                { q: "Which imaging modality is recommended for a pregnant patient when an ultrasound is indeterminate?", a: 1, options: ["Repeat CT scan.", "MRI.", "X-ray.", "Nuclear medicine scan."] },
+                { q: "What is considered the gold-standard treatment for acute appendicitis?", a: 1, options: ["Broad-spectrum antibiotics alone.", "Appendectomy.", "Percutaneous drainage.", "Observation and fluids."] },
+                { q: "Which surgical approach is currently preferred for most uncomplicated appendectomies?", a: 1, options: ["Open approach.", "Laparoscopic approach.", "Robot-assisted open approach.", "Natural orifice transluminal surgery."] },
+                { q: "What procedure may be used to stabilize a patient with a known abscess from a perforated appendix before performing a later appendectomy?", a: 1, options: ["Emergency open surgery.", "Percutaneous drainage.", "High-dose oral steroids.", "Immediate laparoscopic resection."] },
+                { q: "How can 'recurrent' appendicitis occur after an initial appendectomy?", a: 2, options: ["The appendix regrows.", "It is caused by a different organ.", "Too much of the appendiceal stump is left behind.", "It is always a misdiagnosis of Crohn's disease."] },
+                { q: "If left untreated, what complication involving a localized abscess and the skin may develop?", a: 0, options: ["Enterocutaneous fistula.", "Psoriasis.", "Basal cell carcinoma.", "Subcutaneous emphysema."] }
+            ]},
+            { category: "Hepatitis Quiz", questions: [
+                { q: "What is the medical definition of hepatitis?", a: 1, options: ["Infection of the gallbladder.", "Inflammation of the liver tissue.", "Obstruction of the portal vein.", "Enlargement of the spleen."] },
+                { q: "What is the approximate weight of the liver in an average human body?", a: 2, options: ["0.8 kg", "1.0 kg", "1.4 kg", "2.0 kg"] },
+                { q: "Which blood vessel is responsible for carrying digested food from the small intestine to the liver?", a: 2, options: ["Hepatic artery.", "Aorta.", "Portal vein.", "Inferior vena cava."] },
+                { q: "According to the World Health Organization (WHO) data, which type of hepatitis does NOT have an available vaccine?", a: 1, options: ["Hepatitis B.", "Hepatitis C.", "Hepatitis D.", "Hepatitis E."] },
+                { q: "Hepatitis A and E are primarily spread through which of the following?", a: 0, options: ["Contaminated water and lack of food hygiene.", "Blood-to-blood contact.", "Sexual transmission.", "Sharing of needles."] },
+                { q: "What percentage of Hepatitis C patients can be healed within three to six months of treatment?", a: 2, options: ["50%", "75%", "90%", "100%"] },
+                { q: "What percentage of individuals infected with Hepatitis C are reported to be asymptomatic?", a: 2, options: ["20–30%", "40–50%", "70–80%", "90–95%"] },
+                { q: "What is the average incubation period for Hepatitis B?", a: 2, options: ["14 days.", "30 days.", "90 days.", "180 days."] },
+                { q: "Which of the following is classified as a 'Vertical' route of transmission?", a: 1, options: ["Between a person and close contacts.", "Between a mother and her baby.", "Through parenteral injections.", "Through sexual contact."] },
+                { q: "In LFTs, an ALT level greater than what value is indicative of Acute Hepatitis?", a: 2, options: ["> 100", "> 500", "> 1000", "> 5000"] },
+                { q: "Which test suggests an impaired synthetic function of the liver?", a: 2, options: ["Alkaline phosphatase.", "Serum bilirubin.", "Prothrombin time (PT).", "Serum creatinine."] },
+                { q: "Which test is first-line evaluation for suspected Hepatitis C (HCV)?", a: 0, options: ["Anti-HCV antibodies.", "HCV RNA testing.", "Liver biopsy.", "Serum ammonia levels."] },
+                { q: "What does positive Anti-HBs alone indicate?", a: 2, options: ["Acute HBV infection.", "Chronic HBV infection.", "Prior vaccination for HBV.", "Early acute infection."] },
+                { q: "Which body fluid has a HIGH concentration of Hepatitis B virus?", a: 2, options: ["Saliva.", "Semen.", "Wound exudates.", "Sweat."] },
+                { q: "Which of these is an 'extrahepatic' cause of jaundice?", a: 1, options: ["Hemolytic jaundice.", "Extrahepatic obstructive jaundice.", "Toxic hepatitis.", "Wilson disease."] },
+                { q: "Which finding is a negative prognostic indicator in chronic hepatitis?", a: 0, options: ["Ascites.", "Lethargy.", "Weight loss.", "Icterus."] },
+                { q: "What is the recommended treatment for Hepatitis A?", a: 2, options: ["Liver transplant.", "Antiviral medications.", "Rest, diet, and avoiding alcohol.", "Vaccination schedule."] },
+                { q: "Which medication is an approved analogue for treating chronic Hepatitis B?", a: 0, options: ["Lamivudine.", "Acetaminophen.", "Interferon alfa-2b.", "Hep B immune globulin."] },
+                { q: "What is the mean incubation period for Hepatitis A?", a: 2, options: ["1 week.", "2 weeks.", "4 weeks.", "8 weeks."] },
+                { q: "What are the typical liver findings in hepatitis palpation?", a: 1, options: ["Small, hard, and non-tender.", "Tender, enlarged with firm, smooth edge.", "Not palpable due to atrophy.", "Rough and nodular."] }
+            ]},
+            { category: "Abdominal Trauma Quiz", questions: [
+                { q: "What is the definition of abdominal trauma?", a: 2, options: ["Injury only to the abdominal wall.", "Injury only to internal organs.", "Injury to intra-abdominal cavity organs and/or the wall.", "Only penetrating injuries."] },
+                { q: "What % of gunshot wounds penetrating the peritoneum cause significant damage?", a: 2, options: ["50%", "75%", "90%", "100%"] },
+                { q: "What are the two main causes of death from abdominal trauma?", a: 1, options: ["Heart failure and dehydration.", "Hemorrhage and systemic infection.", "Nerve damage and atrophy.", "Bone fractures and respiratory failure."] },
+                { q: "Which solid organ is most vulnerable to all forms of injury?", a: 2, options: ["Spleen.", "Pancreas.", "Liver.", "Kidney."] },
+                { q: "In which quadrant is the liver primarily located?", a: 1, options: ["Left upper.", "Upper right.", "Right lower.", "Left lower."] },
+                { q: "Which organ is the most common cause of massive bleeding in blunt trauma?", a: 1, options: ["Liver.", "Spleen.", "Aorta.", "Stomach."] },
+                { q: "Lacerations of the spleen are associated with fractures of which ribs (20%)?", a: 1, options: ["Right upper ribs.", "Left lower ribs.", "Sternum.", "Floating ribs."] },
+                { q: "Common mechanism for isolated pancreatic injury in children?", a: 1, options: ["Motor vehicle collisions.", "Bicycle handlebars impact.", "Falls from height.", "Sports collisions."] },
+                { q: "Common clinical finding in kidney injury in children?", a: 0, options: ["Bloody urine.", "Jaundice.", "Absent bowel sounds.", "High BP."] },
+                { q: "Diagnostic sign of bowel perforation on CT scan?", a: 1, options: ["Fluid around liver.", "Gas within abdominal cavity.", "Pancreas enlargement.", "Hematoma."] },
+                { q: "What is the 'seat belt sign' associated with?", a: 1, options: ["Broken pelvis.", "High rate of organ injury.", "Surface bruising only.", "Head/neck injury."] },
+                { q: "Tensing of abdominal wall muscles to protect inflamed organs is called:", a: 2, options: ["Evisceration.", "Pneumoperitoneum.", "Abdominal guarding.", "Rigidity."] },
+                { q: "What % of polytrauma show abdominal injury on imaging despite no initial signs?", a: 1, options: ["5%", "10%", "20%", "30%"] },
+                { q: "When is ultrasound recommended over CT?", a: 2, options: ["Bullet path detection.", "Stable patient with head injury.", "Unstable patient who cannot be moved.", "It is never recommended over CT."] },
+                { q: "Primary diagnostic use of X-rays in penetrating trauma?", a: 1, options: ["Internal bleeding detection.", "Object path/foreign matter location.", "Soft tissue view.", "Bowel obstruction diagnosis."] },
+                { q: "Why has DPL been replaced by ultrasound?", a: 2, options: ["Less accurate for bleeding.", "Too expensive.", "Risk of organ injury/unnecessary surgery.", "Takes too long."] },
+                { q: "Which type of trauma predominates in rural areas?", a: 0, options: ["Blunt injuries.", "Gunshots.", "Stab wounds.", "Eviscerations."] },
+                { q: "Main goal of surgery in large, deadly bleeds?", a: 1, options: ["Clean the cavity.", "Stop sources of bleeding.", "Repair minor lacerations.", "Take biopsies."] },
+                { q: "Why is 'long midline incision' favored in emergency surgery?", a: 2, options: ["Smaller scar.", "Prevents infection.", "Fast access/bleeding control.", "Retroperitoneal view."] },
+                { q: "Delayed treatment high mortality is linked to:", a: 1, options: ["Rib fractures.", "GI tract perforation.", "Seat belt bruising.", "Skin laceration."] }
+            ]},
+            { category: "Acute Abdominal Pain Quiz", questions: [
+                { q: "Acute and severe abdominal pain is almost always a symptom of:", a: 1, options: ["Stress", "Intra-abdominal disease", "Muscle strain", "Dietary indiscretion"] },
+                { q: "Type of pain described as vague, dull, and nauseating:", a: 2, options: ["Somatic", "Referred", "Visceral", "Phantom"] },
+                { q: "Pain from 'midgut' structures (small bowel, appendix) is felt in:", a: 1, options: ["Upper abdomen", "Periumbilical area", "Lower abdomen", "Groin"] },
+                { q: "Sharp, well-localized pain from parietal peritoneum:", a: 1, options: ["Visceral", "Somatic", "Referred", "Chronic"] },
+                { q: "Classic example of referred pain:", a: 1, options: ["Periumbilical (appendix)", "Scapular (biliary colic)", "Surgical scar pain", "Lower back ache"] },
+                { q: "Most serious cause of peritonitis:", a: 0, options: ["GI tract perforation", "Exercise", "High-fiber diet", "Alcohol"] },
+                { q: "Why should barium never be given for suspected GI perforation?", a: 2, options: ["Dehydration", "CT interference", "Severe caking/peritonitis", "Masks infection"] },
+                { q: "Immediately life-threatening cause of abdominal pain:", a: 2, options: ["Heartburn", "Cholecystitis", "Ruptured AAA", "Constipation"] },
+                { q: "What should be ruled out first in evaluation?", a: 1, options: ["Nutritional deficiency", "Life-threatening causes", "Minor infections", "Psychology"] },
+                { q: "In physical exam, 'guarding' is:", a: 1, options: ["Refusal to be touched", "Involuntary muscle contraction", "Voluntary tensing", "Inguinal swelling"] },
+                { q: "Where to palpate specifically for hernias?", a: 1, options: ["Epigastric", "Inguinal area/scars", "Costovertebral angles", "Periumbilical"] },
+                { q: "A 'silent abdomen' with severe pain suggests:", a: 2, options: ["Obstruction", "Renal colic", "Peritonitis", "Healthy digestion"] },
+                { q: "RUQ tenderness suggests:", a: 1, options: ["Appendicitis", "Cholecystitis", "Diverticulitis", "Splenic rupture"] },
+                { q: "Grey Turner and Cullen signs suggest:", a: 1, options: ["Ectopic pregnancy", "Hemorrhagic pancreatitis", "Obstruction", "Renal stones"] },
+                { q: "Patient writhing around suggests:", a: 1, options: ["Peritonitis", "Obstructive mechanism", "Perforated ulcer", "Appendicitis"] },
+                { q: "Mandatory test for women of childbearing age with abdominal pain:", a: 1, options: ["LFT", "Pregnancy test", "CXR", "CBC"] },
+                { q: "Lab test of 'high value' for acute pancreatitis:", a: 1, options: ["Hemoglobin", "Serum lipase", "WBC count", "Creatinine"] },
+                { q: "Diagnostic modality of choice for renal stones:", a: 1, options: ["Ultrasound", "Noncontrast helical CT", "Plain X-ray", "MRI"] },
+                { q: "Accuracy of CT with contrast for significant pain?", a: 2, options: ["75%", "85%", "About 95%", "100%"] },
+                { q: "Does morphine interfere with peritonitis diagnosis?", a: 1, options: ["Yes, masks signs", "No, may make exam easier", "Yes, unconsciousness", "No, only for minor pain"] }
+            ]},
+            { category: "Fatty Liver Disease Quiz", questions: [
+                { q: "Medical term for fatty liver disease:", a: 1, options: ["Cirrhosis", "Steatosis", "Carcinoma", "Biliary colic"] },
+                { q: "Where is pain occasionally felt in fatty liver?", a: 1, options: ["Lower left", "Upper right", "Mid-back", "Left shoulder"] },
+                { q: "Two main types of fatty liver disease:", a: 2, options: ["Diabetic/Hypertensive", "Acute/Chronic", "Non-alcoholic/Alcoholic", "Primary/Secondary"] },
+                { q: "What distinguishes NASH from simple fatty liver?", a: 1, options: ["Fat only", "Inflammation and damage", "Alcohol cause", "Immediate failure"] },
+                { q: "Percentage of NAFLD patients estimated to have NASH?", a: 2, options: ["5%", "10%", "20%", "50%"] },
+                { q: "Stage where damage is permanent, liver is shrunken/lumpy:", a: 3, options: ["Simple", "NASH", "Fibrosis", "Cirrhosis"] },
+                { q: "Characteristic of 'fibrosis' stage:", a: 1, options: ["Immediate failure", "Scar tissue but functions normally", "First stage", "Viral cause"] },
+                { q: "Years to progress from simple NAFLD to cirrhosis?", a: 2, options: ["10 years", "25 years", "57 years", "80 years"] },
+                { q: "Pathologically, what accumulates in fatty change?", a: 1, options: ["Glucose", "Triglycerides", "Bilirubin", "Calcium"] },
+                { q: "Form of steatosis associated with obesity/diabetes:", a: 1, options: ["Microvesicular", "Macrovesicular", "Fibrotic", "Crystalline"] },
+                { q: "What is the 'signet ring' appearance?", a: 1, options: ["Central nucleus", "Nucleus pushed to periphery", "Inflammation ring", "Circular scar"] },
+                { q: "Irreversible lesion in fatty liver pathology:", a: 2, options: ["Liposomes", "Small vacuoles", "Fatty cysts", "Triglycerides"] },
+                { q: "How is NAFLD most commonly discovered?", a: 1, options: ["Mass screening", "Incidental discovery", "Severe jaundice", "Sudden weight gain"] },
+                { q: "Gold standard diagnostic test for fatty liver:", a: 2, options: ["Ultrasound", "Enzyme panels", "Liver biopsy", "MRI"] },
+                { q: "Toxic metabolite of alcohol causing fatty liver:", a: 1, options: ["Acetone", "Aldehydes", "Methanol", "Uric acid"] },
+                { q: "Consumption of how many eggs per week increases risk?", a: 1, options: ["0 to 1", "2 to 3", "5 to 7", "More than 10"] },
+                { q: "Food to AVOID with fatty liver:", a: 1, options: ["Leafy greens", "White bread/rice/pasta", "Lean poultry", "Berries"] },
+                { q: "How does Pioglitazone (Actos) help?", a: 1, options: ["Destroys fat", "Increases insulin sensitivity", "Chelator", "Antibiotic"] },
+                { q: "Percentage of NASH without cirrhosis that develop HCC?", a: 2, options: ["10%", "25%", "Up to 45%", "80%"] },
+                { q: "Mainstay of treatment for NAFLD:", a: 2, options: ["Resection", "Chemotherapy", "Lifestyle changes", "Transfusions"] }
+            ]},
+            { category: "Food Poisoning Quiz", questions: [
+                { q: "Medical definition of food poisoning:", a: 1, options: ["Allergic reaction", "Contaminated/spoiled/toxic food", "Eating too fast", "Intolerance"] },
+                { q: "Maximum reported incubation period?", a: 2, options: ["24 hours", "7 days", "14 days", "28 days"] },
+                { q: "Life-threatening food poisoning symptom:", a: 1, options: ["Headache", "Diarrhea > 3 days", "99F fever", "Axillary sweat"] },
+                { q: "Fever warning sign threshold:", a: 1, options: ["100F", "102F", "104F", "105F"] },
+                { q: "Most prevalent pathogen type:", a: 2, options: ["Viruses", "Parasites", "Bacteria", "Fungi"] },
+                { q: "Biggest culprit of serious cases in USA:", a: 2, options: ["E. coli", "Listeria", "Salmonella", "Campylobacter"] },
+                { q: "Toxoplasma source:", a: 1, options: ["Shellfish", "Cat litter", "Spinach", "Poultry"] },
+                { q: "Virus causing > 20 million cases annually:", a: 2, options: ["Rotavirus", "Sapovirus", "Norovirus", "Astrovirus"] },
+                { q: "Viral condition transmissible through food:", a: 1, options: ["Influenza", "Hepatitis A", "EBV", "Rhinovirus"] },
+                { q: "Where do preformed toxins primarily act?", a: 0, options: ["Intestine/CNS", "Lungs/heart", "Skin/muscle", "Kidneys"] },
+                { q: "Infant Botulism food association:", a: 1, options: ["Raw eggs", "Honey/syrups", "Milk", "Beef"] },
+                { q: "Treatment for Infant Botulism:", a: 1, options: ["Antibiotics", "Immune globulin (BIG)", "Vitamin C", "Gastric lavage"] },
+                { q: "Most common reason for fecal contamination:", a: 1, options: ["Refrigeration", "Hands not washed", "Cross-contamination", "Expired spices"] },
+                { q: "Primary focus when examining suspected patient:", a: 1, options: ["Weight", "Dehydration severity", "Bone fractures", "Reflexes"] },
+                { q: "Clinical finding with S. Typhi:", a: 2, options: ["Cellulitis", "Erythema nodosum", "Rose spot macules", "Pharyngitis"] },
+                { q: "Sign of 'mild' dehydration:", a: 1, options: ["Tachycardia", "Decreased axillary sweat", "Hypotension", "Orthostasis"] },
+                { q: "Why perform C-difficile assay?", a: 1, options: ["Parasites", "Rule out antibiotic-associated diarrhea", "Volume depletion", "Occult blood"] },
+                { q: "Home recovery resolution time:", a: 1, options: ["1-2 days", "3-5 days", "7-10 days", "2 weeks"] },
+                { q: "Avoid which substance during poisoning?", a: 1, options: ["Coconut water", "Caffeine", "Sports drinks", "Fruit juice"] },
+                { q: "Hard to digest food (avoid):", a: 0, options: ["Fried/fatty", "Crackers", "Bananas", "Potatoes"] }
+            ]},
+            { category: "Gallbladder Semiology Quiz", questions: [
+                { q: "Primary function of gallbladder:", a: 1, options: ["Producing bile", "Storing/releasing bile", "Filtering toxins", "Absorbing cholesterol"] },
+                { q: "Definition of Cholecystitis:", a: 1, options: ["Stone formation", "Inflammation", "Duct narrowing", "Biliary tumor"] },
+                { q: "Precipitates Acute Calculous Cholecystitis (90%):", a: 1, options: ["Alcohol", "Duct obstruction by stones", "Viral infection", "Weight loss"] },
+                { q: "Most common location for gallstone impaction:", a: 2, options: ["Common bile duct", "Hepatic duct", "Hartmann’s pouch", "Duodenum"] },
+                { q: "Percentage of people with gallstones who are asymptomatic?", a: 3, options: ["10%", "50%", "75%", "90%"] },
+                { q: "Gallstone composition:", a: 1, options: ["Calcium/sodium", "Cholesterol/bilirubin", "Protein/glucose", "Iron/magnesium"] },
+                { q: "Biliary Colic episode duration:", a: 1, options: ["5-10 mins", "1-5 hours", "12-24 hours", "48+ hours"] },
+                { q: "Biliary colic trigger:", a: 2, options: ["Exercise", "Fasting", "Large/fatty meals", "Excess water"] },
+                { q: "Surgical emergency complication:", a: 1, options: ["Indigestion", "Rupture", "Low fever", "Gas"] },
+                { q: "Acalculous Biliary Pain characteristic:", a: 1, options: ["Large stones", "No stones on imaging", "Lower abdomen only", "AIDS-related"] },
+                { q: "Primary Sclerosing Cholangitis type:", a: 1, options: ["Bacterial", "Autoimmune", "Hereditary", "Deficiency"] },
+                { q: "Common gallbladder pain location:", a: 1, options: ["Lower left", "Upper right/middle", "Lower back", "Left shoulder"] },
+                { q: "Gallbladder pain radiation:", a: 1, options: ["Left arm", "Right shoulder blade/back", "Knees", "Head"] },
+                { q: "Deep breath effect on gallbladder pain:", a: 1, options: ["Relieves", "Increases", "No effect", "Sharp to dull"] },
+                { q: "Tea-colored urine indicates:", a: 1, options: ["Red", "Tea-colored", "White", "Clear"] },
+                { q: "Stool characteristic in gallbladder issues:", a: 2, options: ["Black/tarry", "Green", "Clay-colored", "Visible blood"] },
+                { q: "Wall thickening measurement (US):", a: 2, options: ["1mm", "2mm", "3mm", "5mm"] },
+                { q: "Murphy's Sign:", a: 1, options: ["Reflexes", "Pain on gallbladder pressure", "Bowel sounds", "Jaundice check"] },
+                { q: "Lab finding for infection/inflammation:", a: 1, options: ["Low RBC", "Elevated WBC", "Low sugar", "Low enzymes"] },
+                { q: "Gallstone Ileus:", a: 1, options: ["Cancer", "Small bowel obstruction by large stone", "Biliary tree infection", "Absent gallbladder"] }
+            ]}
+        ];
+
+        let audioCtx = null;
+        function playTone(freq, type, duration) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        const playCorrect = () => playTone(880, 'sine', 0.2);
+        const playWrong = () => playTone(220, 'square', 0.2);
+
+        function initQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = "";
+            let globalIdx = 0;
+
+            quizData.forEach((section) => {
+                const h = document.createElement('div');
+                h.className = 'category-header rounded-r-lg';
+                h.innerText = section.category;
+                container.appendChild(h);
+
+                section.questions.forEach((qObj) => {
+                    const qDiv = document.createElement('div');
+                    qDiv.className = 'p-5 border rounded-xl bg-white shadow-sm transition-all duration-300 relative group border-gray-100';
+                    qDiv.id = `q-wrapper-${globalIdx}`;
+                    qDiv.innerHTML = `
+                        <p class="font-bold text-gray-800 mb-4">${globalIdx + 1}. ${qObj.q}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="q-grid-${globalIdx}">
+                            ${qObj.options.map((opt, oIdx) => `
+                                <label class="flex items-center p-3 border rounded-lg hover:border-blue-400 hover:bg-blue-50 cursor-pointer transition">
+                                    <input type="radio" name="q${globalIdx}" value="${oIdx}" class="hidden" onchange="handleAnswer(${globalIdx}, ${oIdx}, ${qObj.a})">
+                                    <span class="text-sm text-gray-700">${opt}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    `;
+                    container.appendChild(qDiv);
+                    globalIdx++;
+                });
+            });
+            document.getElementById('total-questions').textContent = globalIdx;
+        }
+
+        function handleAnswer(qIdx, selected, correct) {
+            const grid = document.getElementById(`q-grid-${qIdx}`);
+            const labels = grid.querySelectorAll('label');
+            const wrapper = document.getElementById(`q-wrapper-${qIdx}`);
+            
+            grid.classList.add('disabled-labels');
+            
+            if (selected === correct) {
+                labels[selected].classList.add('option-correct');
+                playCorrect();
+            } else {
+                labels[selected].classList.add('option-incorrect');
+                labels[correct].classList.add('option-correct');
+                playWrong();
+            }
+            wrapper.classList.add('bg-gray-50');
+        }
+
+        function calculateFinalScore() {
+            let totalCorrect = 0;
+            let totalAnswered = 0;
+            let totalQ = 0;
+
+            quizData.forEach(s => {
+                s.questions.forEach((q, idx) => {
+                    const selected = document.querySelector(`input[name="q${totalQ}"]:checked`);
+                    if (selected) {
+                        totalAnswered++;
+                        if (parseInt(selected.value) === q.a) totalCorrect++;
+                    }
+                    totalQ++;
+                });
+            });
+
+            document.getElementById('final-score').textContent = totalCorrect;
+            document.getElementById('result-box').classList.remove('hidden');
+            document.getElementById('result-box').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function resetAll() {
+            initQuiz();
+            document.getElementById('result-box').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.onload = initQuiz;
+    </script>
+</body>
+</html>
